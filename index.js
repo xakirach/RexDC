@@ -190,7 +190,7 @@ client.once("ready", () => {
 
   (async () => {
     try {
-      console.log('Memulai penyebaran perintah (/).');
+      console.log('Memulai perintah (/).');
 
       // Mendaftarkan perintah secara global
       await rest.put(
