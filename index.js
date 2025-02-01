@@ -97,9 +97,9 @@ client.once("ready", () => {
         hour: 7,
         minute: 0,
         messages: [
-          "@everyone Good morning everyone! New day, new energy. Let’s gooo🚀",
-          "Good morning... stay positive today!💪 @everyone",
-          "@everyone Good morning guys!🌞",
+          "@everyone Pagi semuanya! Hari baru, semangat baru. Let’s gooo🚀",
+          "Pagiii... semangat ngadepin dunia hari ini!💪 @everyone",
+          "@everyone Selamat pagi guys!🌞",
         ],
       },
     ],
@@ -109,9 +109,9 @@ client.once("ready", () => {
         hour: 11,
         minute: 30,
         messages: [
-          "@everyone Don't forget to pray Friday prayer!🕌",
-          "Guys who are men, pray Friday prayer!🕌",
-          "Pray five times a day rarely, at least don't skip Friday prayer🕌 @everyone",
+          "@everyone Jangan lupa sholat jumat kawan!🕌",
+          "Yang merasa laki, sholat jumat bre🕌",
+          "Sholat lima waktu jarang, paling ga sholat jumat jangan skip!🕌 @everyone",
         ],
       },
     ],
@@ -163,21 +163,25 @@ client.once("ready", () => {
     }
   }
 
-  // Registering /chat command globally
+  // Registering /chat and /reply commands globally
   const commands = [
     new SlashCommandBuilder()
       .setName('chat')
-      .setDescription('Send a message via bot')
+      .setDescription('Send a message through the bot')
       .addStringOption(option =>
         option.setName('message')
           .setDescription('Enter the message you want to send')
           .setRequired(true)),
     new SlashCommandBuilder()
       .setName('reply')
-      .setDescription('Reply to a message via bot')
+      .setDescription('Reply to a message through the bot')
+      .addStringOption(option =>
+        option.setName('message_id')
+          .setDescription('Enter the message ID to reply to')
+          .setRequired(true))
       .addStringOption(option =>
         option.setName('reply_message')
-          .setDescription('Enter the reply message you want to send')
+          .setDescription('Enter the reply message')
           .setRequired(true))
   ].map(command => command.toJSON());
 
@@ -231,22 +235,20 @@ client.on('interactionCreate', async interaction => {
       return await interaction.reply({ content: "You do not have permission to use this command.", ephemeral: true });
     }
 
+    const messageId = interaction.options.getString('message_id');
     const replyMessage = interaction.options.getString('reply_message');
 
-    // Get the last message that the user replied to
-    const fetchedMessages = await interaction.channel.messages.fetch({ limit: 50 });
-    const lastMessage = fetchedMessages.last(); // The last message is the one we want to reply to
-
-    if (!lastMessage) {
-      return await interaction.reply({ content: "No message found to reply to.", ephemeral: true });
-    }
-
     try {
-      await lastMessage.reply(replyMessage);
+      const message = await interaction.channel.messages.fetch(messageId);
+      if (!message) {
+        return await interaction.reply({ content: "Message not found.", ephemeral: true });
+      }
+
+      await message.reply(replyMessage);
       await interaction.reply({ content: "Reply sent successfully!", ephemeral: true });
     } catch (error) {
-      console.error(`Failed to reply to message: ${error}`);
-      await interaction.reply({ content: "Failed to send reply. Please try again.", ephemeral: true });
+      console.error(`Failed to fetch or reply to message: ${error}`);
+      await interaction.reply({ content: "Failed to reply to message. Please check the message ID.", ephemeral: true });
     }
   }
 });
