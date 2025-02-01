@@ -57,9 +57,9 @@ client.on("messageCreate", (message) => {
 
   const messageContent = message.content.toLowerCase();
   const responses = {
-    kontol: ["Watch your mouth!🫵", "Weitsss", "Prittt"],
-    memek: ["Type like you've never learned religion", "Stay calm, buddy"],
-    ngentot: ["Type correctly", "It's normal, bro!"],
+    kontol: ["jaga mulut lu!🫵", "Weitsss", "Prittt"],
+    memek: ["ketikan lu kek ga pernah belajar agama", "santai kawan"],
+    ngentot: ["ngetik yang bener", "biasa aja sob!"],
   };
 
   for (const keyword in responses) {
