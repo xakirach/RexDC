@@ -57,17 +57,20 @@ client.on("messageCreate", (message) => {
 
   const messageContent = message.content.toLowerCase();
   const responses = {
-    kontol: ["jaga mulut lu!🫵", "Weitsss", "Prittt"],
-    memek: ["ketikan lu kek ga pernah belajar agama", "santai kawan"],
-    ngentot: ["ngetik yang bener", "biasa aja sob!"],
+    "kontol,kntol,ktol": ["jaga mulut lu!🫵", "Weitsss", "Prittt"],
+    "memek,mmek,mmk": ["ketikan lu kek ga pernah belajar agama", "santai kawan"],
+    "ngentot,ngntot": ["ngetik yang bener", "biasa aja sob!"],
   };
 
-  for (const keyword in responses) {
-    const regex = new RegExp(`\\b${keyword}\\b`, "i");
-    if (regex.test(messageContent)) {
-      const response = responses[keyword][Math.floor(Math.random() * responses[keyword].length)];
-      message.reply(response);
-      return;
+  for (const keywords in responses) {
+    const keywordArray = keywords.split(",");
+    for (const keyword of keywordArray) {
+      const regex = new RegExp(`\\b${keyword}\\b`, "i");
+      if (regex.test(messageContent)) {
+        const response = responses[keywords][Math.floor(Math.random() * responses[keywords].length)];
+        message.reply(response);
+        return;
+      }
     }
   }
 });
