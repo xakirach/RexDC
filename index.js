@@ -1,5 +1,12 @@
 // Import Discord.js and moment-timezone
-const { Client, GatewayIntentBits, ActivityType, SlashCommandBuilder, REST, Routes } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  ActivityType,
+  SlashCommandBuilder,
+  REST,
+  Routes,
+} = require("discord.js");
 const moment = require("moment-timezone");
 require("dotenv").config();
 
@@ -44,8 +51,8 @@ function getTimeUntil(hour, minute, timeZone, day, schedule, category) {
   // Log combined with enter
   console.log(
     `[${category}]\n` +
-    `Current time: ${now.format("YYYY-MM-DD HH:mm:ss z")}\n` +
-    `Target time: ${target.format("YYYY-MM-DD HH:mm:ss z")}`
+      `Current time: ${now.format("YYYY-MM-DD HH:mm:ss z")}\n` +
+      `Target time: ${target.format("YYYY-MM-DD HH:mm:ss z")}`
   );
 
   return target.diff(now); // Time in milliseconds
@@ -58,7 +65,10 @@ client.on("messageCreate", (message) => {
   const messageContent = message.content.toLowerCase();
   const responses = {
     "kontol,kntol,ktol": ["jaga mulut lu!🫵", "Weitsss", "Prittt"],
-    "memek,mmek,mmk": ["ketikan lu kek ga pernah belajar agama", "santai kawan"],
+    "memek,mmek,mmk": [
+      "ketikan lu kek ga pernah belajar agama",
+      "santai kawan",
+    ],
     "ngentot,ngntot": ["ngetik yang bener", "biasa aja sob!"],
   };
 
@@ -67,7 +77,10 @@ client.on("messageCreate", (message) => {
     for (const keyword of keywordArray) {
       const regex = new RegExp(`\\b${keyword}\\b`, "i");
       if (regex.test(messageContent)) {
-        const response = responses[keywords][Math.floor(Math.random() * responses[keywords].length)];
+        const response =
+          responses[keywords][
+            Math.floor(Math.random() * responses[keywords].length)
+          ];
         message.reply(response);
         return;
       }
@@ -106,6 +119,17 @@ client.once("ready", () => {
         ],
       },
     ],
+    SahurMessages: [
+      {
+        hour: 3,
+        minute: 0,
+        messages: [
+          "@everyone Sahur guys!🍽️",
+          "Bangun sahur bre!🍽️ @everyone",
+          "makan sahur jangan lupa!🍽️ @everyone",
+        ],
+      },
+    ],
     FridayMessages: [
       {
         day: 5, // Friday (0 = Sunday, 1 = Monday, ..., 5 = Friday)
@@ -135,7 +159,9 @@ client.once("ready", () => {
       );
 
       const hours = Math.floor(timeUntilNextSchedule / (1000 * 60 * 60));
-      const minutes = Math.floor((timeUntilNextSchedule % (1000 * 60 * 60)) / (1000 * 60));
+      const minutes = Math.floor(
+        (timeUntilNextSchedule % (1000 * 60 * 60)) / (1000 * 60)
+      );
       console.log(
         `Scheduled message will be sent in ${hours} hours ${minutes} minutes.`
       );
@@ -149,13 +175,22 @@ client.once("ready", () => {
               console.error(`Channel with ID ${channelId} not found.`);
               return;
             }
-            const randomMessage = schedule.messages[Math.floor(Math.random() * schedule.messages.length)];
+            const randomMessage =
+              schedule.messages[
+                Math.floor(Math.random() * schedule.messages.length)
+              ];
             channel.send(randomMessage);
 
             // Schedule message sending every 24 hours after that (or one week if specific day)
-            const intervalTime = schedule.day !== undefined ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+            const intervalTime =
+              schedule.day !== undefined
+                ? 7 * 24 * 60 * 60 * 1000
+                : 24 * 60 * 60 * 1000;
             setInterval(() => {
-              const randomMessage = schedule.messages[Math.floor(Math.random() * schedule.messages.length)];
+              const randomMessage =
+                schedule.messages[
+                  Math.floor(Math.random() * schedule.messages.length)
+                ];
               channel.send(randomMessage);
             }, intervalTime); // 24 hours or one week in milliseconds
           })
@@ -169,38 +204,41 @@ client.once("ready", () => {
   // Registering /chat and /reply commands globally
   const commands = [
     new SlashCommandBuilder()
-      .setName('chat')
-      .setDescription('Send a message through the bot')
-      .addStringOption(option =>
-        option.setName('message')
-          .setDescription('Enter the message you want to send')
-          .setRequired(true)),
+      .setName("chat")
+      .setDescription("Send a message through the bot")
+      .addStringOption((option) =>
+        option
+          .setName("message")
+          .setDescription("Enter the message you want to send")
+          .setRequired(true)
+      ),
     new SlashCommandBuilder()
-      .setName('reply')
-      .setDescription('Reply to a message through the bot')
-      .addStringOption(option =>
-        option.setName('message_id')
-          .setDescription('Enter the message ID to reply to')
-          .setRequired(true))
-      .addStringOption(option =>
-        option.setName('reply_message')
-          .setDescription('Enter the reply message')
-          .setRequired(true))
-  ].map(command => command.toJSON());
+      .setName("reply")
+      .setDescription("Reply to a message through the bot")
+      .addStringOption((option) =>
+        option
+          .setName("message_id")
+          .setDescription("Enter the message ID to reply to")
+          .setRequired(true)
+      )
+      .addStringOption((option) =>
+        option
+          .setName("reply_message")
+          .setDescription("Enter the reply message")
+          .setRequired(true)
+      ),
+  ].map((command) => command.toJSON());
 
-  const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
+  const rest = new REST({ version: "10" }).setToken(BOT_TOKEN);
 
   (async () => {
     try {
-      console.log('Starting command (/).');
+      console.log("Starting command (/).");
 
       // Registering commands globally
-      await rest.put(
-        Routes.applicationCommands(CLIENT_ID),
-        { body: commands },
-      );
+      await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
 
-      console.log('Commands successfully applied.');
+      console.log("Commands successfully applied.");
     } catch (error) {
       console.error(error);
     }
@@ -208,50 +246,72 @@ client.once("ready", () => {
 });
 
 // Event when there is an interaction (slash command)
-client.on('interactionCreate', async interaction => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
-  if (interaction.commandName === 'chat') {
+  if (interaction.commandName === "chat") {
     const member = interaction.member;
     const isOwner = member.id === interaction.guild.ownerId;
-    const isAdmin = member.roles.cache.some(role => role.name === '🚔Administrator');
+    const isAdmin = member.roles.cache.some(
+      (role) => role.name === "🚔Administrator"
+    );
 
     if (!isOwner && !isAdmin) {
-      return await interaction.reply({ content: "You do not have permission to use this command.", ephemeral: true });
-    }        
+      return await interaction.reply({
+        content: "You do not have permission to use this command.",
+        ephemeral: true,
+      });
+    }
 
-    const message = interaction.options.getString('message');
+    const message = interaction.options.getString("message");
 
-    await interaction.reply({ content: "Message successfully sent!", ephemeral: true });
+    await interaction.reply({
+      content: "Message successfully sent!",
+      ephemeral: true,
+    });
 
-    await interaction.channel.send(message).catch(error => {
+    await interaction.channel.send(message).catch((error) => {
       console.error(`Failed to send message: ${error}`);
     });
   }
 
-  if (interaction.commandName === 'reply') {
+  if (interaction.commandName === "reply") {
     const member = interaction.member;
     const isOwner = member.id === interaction.guild.ownerId;
-    const isAdmin = member.roles.cache.some(role => role.name === '🚔Administrator');
+    const isAdmin = member.roles.cache.some(
+      (role) => role.name === "🚔Administrator"
+    );
 
     if (!isOwner && !isAdmin) {
-      return await interaction.reply({ content: "You do not have permission to use this command.", ephemeral: true });
+      return await interaction.reply({
+        content: "You do not have permission to use this command.",
+        ephemeral: true,
+      });
     }
 
-    const messageId = interaction.options.getString('message_id');
-    const replyMessage = interaction.options.getString('reply_message');
+    const messageId = interaction.options.getString("message_id");
+    const replyMessage = interaction.options.getString("reply_message");
 
     try {
       const message = await interaction.channel.messages.fetch(messageId);
       if (!message) {
-        return await interaction.reply({ content: "Message not found.", ephemeral: true });
+        return await interaction.reply({
+          content: "Message not found.",
+          ephemeral: true,
+        });
       }
 
       await message.reply(replyMessage);
-      await interaction.reply({ content: "Reply sent successfully!", ephemeral: true });
+      await interaction.reply({
+        content: "Reply sent successfully!",
+        ephemeral: true,
+      });
     } catch (error) {
       console.error(`Failed to fetch or reply to message: ${error}`);
-      await interaction.reply({ content: "Failed to reply to message. Please check the message ID.", ephemeral: true });
+      await interaction.reply({
+        content: "Failed to reply to message. Please check the message ID.",
+        ephemeral: true,
+      });
     }
   }
 });
