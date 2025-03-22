@@ -137,7 +137,7 @@ client.once("ready", () => {
         minute: 30,
         messages: [
           "@everyone Jangan lupa sholat jumat kawan!🕌",
-          "Yang merasa laki, sholat jumat bre🕌",
+          "Yang merasa laki, sholat jumat bre🕌 @everyone",
           "Sholat lima waktu jarang, paling ga sholat jumat jangan skip!🕌 @everyone",
         ],
       },
