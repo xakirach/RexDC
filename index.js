@@ -249,7 +249,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!isOwner && !isAdmin) {
       return await interaction.reply({
         content: "You do not have permission to use this command.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -257,7 +257,7 @@ client.on("interactionCreate", async (interaction) => {
 
     await interaction.reply({
       content: "Message successfully sent!",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
 
     await interaction.channel.send(message).catch((error) => {
@@ -275,7 +275,7 @@ client.on("interactionCreate", async (interaction) => {
     if (!isOwner && !isAdmin) {
       return await interaction.reply({
         content: "You do not have permission to use this command.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -287,20 +287,20 @@ client.on("interactionCreate", async (interaction) => {
       if (!message) {
         return await interaction.reply({
           content: "Message not found.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
 
       await message.reply(replyMessage);
       await interaction.reply({
         content: "Reply sent successfully!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
       console.error(`Failed to fetch or reply to message: ${error}`);
       await interaction.reply({
         content: "Failed to reply to message. Please check the message ID.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
   }
