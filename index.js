@@ -67,7 +67,8 @@ client.on("messageCreate", (message) => {
     "kontol,kntol,ktol": ["jaga mulut lu!🫵", "Weitsss", "Prittt"],
     "memek,mmek,mmk": [
       "ketikan lu kek ga pernah belajar agama",
-      "santai kawan",
+      "santai cuy",
+      "bahasa lu jelek",
     ],
     "ngentot,ngntot": ["ngetik yang bener", "biasa aja sob!"],
   };
@@ -116,17 +117,6 @@ client.once("ready", () => {
           "@everyone Pagi semuanya! Hari baru, semangat baru. Let’s gooo🚀",
           "Pagiii... semangat ngadepin dunia hari ini!💪 @everyone",
           "@everyone Selamat pagi guys!🌞",
-        ],
-      },
-    ],
-    SahurMessages: [
-      {
-        hour: 3,
-        minute: 0,
-        messages: [
-          "@everyone Sahur guys!🍽️",
-          "Bangun sahur bre!🍽️ @everyone",
-          "makan sahur jangan lupa!🍽️ @everyone",
         ],
       },
     ],
@@ -253,7 +243,7 @@ client.on("interactionCreate", async (interaction) => {
     const member = interaction.member;
     const isOwner = member.id === interaction.guild.ownerId;
     const isAdmin = member.roles.cache.some(
-      (role) => role.name === "🚔Administrator"
+      (role) => role.name === "☠️Overlord"
     );
 
     if (!isOwner && !isAdmin) {
@@ -279,7 +269,7 @@ client.on("interactionCreate", async (interaction) => {
     const member = interaction.member;
     const isOwner = member.id === interaction.guild.ownerId;
     const isAdmin = member.roles.cache.some(
-      (role) => role.name === "🚔Administrator"
+      (role) => role.name === "☠️Overlord"
     );
 
     if (!isOwner && !isAdmin) {
