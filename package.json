@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "discord-api-types": "^0.38.5",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
     "moment-timezone": "^0.5.46",

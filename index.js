@@ -7,19 +7,9 @@ const {
   REST,
   Routes,
 } = require("discord.js");
+const { MessageFlags } = require("discord-api-types/v10");
 const moment = require("moment-timezone");
 require("dotenv").config();
-
-// Env Validation
-["BOT_TOKEN", "CLIENT_ID"].forEach((key) => {
-  if (!process.env[key]) {
-    console.error(`${key} not found in .env file!`);
-    process.exit(1);
-  }
-});
-
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
 
 // Create bot instance
 const client = new Client({
@@ -30,15 +20,16 @@ const client = new Client({
   ],
 });
 
-// Permission Check
-function isAuthorized(member, guild) {
-  return (
-    member.id === guild.ownerId ||
-    member.roles.cache.some((role) => role.name === "☠️Overlord")
-  );
+// Bot token and client ID
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+
+if (!BOT_TOKEN || !CLIENT_ID) {
+  console.error("Missing BOT_TOKEN or CLIENT_ID in .env file!");
+  process.exit(1);
 }
 
-// Time until schedule
+// Function to calculate time until next schedule
 function getTimeUntil(hour, minute, timeZone, day, schedule, category) {
   const now = moment().tz(timeZone);
   let target = now.clone().hour(hour).minute(minute).second(0).millisecond(0);
@@ -54,33 +45,15 @@ function getTimeUntil(hour, minute, timeZone, day, schedule, category) {
   }
 
   console.log(
-    `[${category}]\nCurrent: ${now.format()} \nTarget: ${target.format()}`
+    `[${category}]\n` +
+      `Current time: ${now.format("YYYY-MM-DD HH:mm:ss z")}\n` +
+      `Target time: ${target.format("YYYY-MM-DD HH:mm:ss z")}`
   );
 
   return target.diff(now);
 }
 
-// Send scheduled message
-function sendScheduledMessage(channelId, schedule) {
-  client.channels
-    .fetch(channelId)
-    .then((channel) => {
-      if (!channel) {
-        console.error(`Channel with ID ${channelId} not found.`);
-        return;
-      }
-      const randomMessage =
-        schedule.messages[
-          Math.floor(Math.random() * schedule.messages.length)
-        ];
-      channel.send(randomMessage);
-    })
-    .catch((error) => {
-      console.error(`Failed to fetch channel or send message: ${error}`);
-    });
-}
-
-// Auto response
+// Auto response (bad words)
 client.on("messageCreate", (message) => {
   if (message.author.bot) return;
 
@@ -111,21 +84,22 @@ client.on("messageCreate", (message) => {
   }
 });
 
-// On bot ready
+// Scheduled message system
 client.once("ready", () => {
   console.log(`Bot successfully logged in as ${client.user.tag}`);
 
+  // Set bot status
   try {
     client.user.setActivity({
       name: "This Server",
       type: ActivityType.Watching,
     });
-    console.log("Bot status successfully set!");
+    console.log("Bot status set.");
   } catch (error) {
     console.error("Failed to set bot status:", error);
   }
 
-  const channelId = "1303385941540606096";
+  const channelId = "1303385941540606096"; // Replace with your channel ID
   const timeZone = "Asia/Jakarta";
 
   const scheduleMessages = {
@@ -155,9 +129,8 @@ client.once("ready", () => {
   };
 
   for (const category in scheduleMessages) {
-    const messages = scheduleMessages[category];
-    for (const schedule of messages) {
-      const timeUntil = getTimeUntil(
+    for (const schedule of scheduleMessages[category]) {
+      const timeUntilNextSchedule = getTimeUntil(
         schedule.hour,
         schedule.minute,
         timeZone,
@@ -166,17 +139,46 @@ client.once("ready", () => {
         category
       );
 
-      const intervalTime =
-        schedule.day !== undefined
-          ? 7 * 24 * 60 * 60 * 1000
-          : 24 * 60 * 60 * 1000;
+      const hours = Math.floor(timeUntilNextSchedule / (1000 * 60 * 60));
+      const minutes = Math.floor(
+        (timeUntilNextSchedule % (1000 * 60 * 60)) / (1000 * 60)
+      );
+      console.log(
+        `Scheduled message in ${hours} hours ${minutes} minutes.`
+      );
 
       setTimeout(() => {
-        sendScheduledMessage(channelId, schedule);
-        setInterval(() => {
-          sendScheduledMessage(channelId, schedule);
-        }, intervalTime);
-      }, timeUntil);
+        client.channels
+          .fetch(channelId)
+          .then((channel) => {
+            if (!channel) {
+              console.error(`Channel ID ${channelId} not found.`);
+              return;
+            }
+
+            const randomMessage =
+              schedule.messages[
+                Math.floor(Math.random() * schedule.messages.length)
+              ];
+            channel.send(randomMessage);
+
+            const intervalTime =
+              schedule.day !== undefined
+                ? 7 * 24 * 60 * 60 * 1000
+                : 24 * 60 * 60 * 1000;
+
+            setInterval(() => {
+              const randomMessage =
+                schedule.messages[
+                  Math.floor(Math.random() * schedule.messages.length)
+                ];
+              channel.send(randomMessage);
+            }, intervalTime);
+          })
+          .catch((error) => {
+            console.error(`Error fetching channel or sending message: ${error}`);
+          });
+      }, timeUntilNextSchedule);
     }
   }
 
@@ -186,7 +188,10 @@ client.once("ready", () => {
       .setName("chat")
       .setDescription("Send a message through the bot")
       .addStringOption((option) =>
-        option.setName("message").setDescription("Message").setRequired(true)
+        option
+          .setName("message")
+          .setDescription("Enter the message you want to send")
+          .setRequired(true)
       ),
     new SlashCommandBuilder()
       .setName("reply")
@@ -194,13 +199,13 @@ client.once("ready", () => {
       .addStringOption((option) =>
         option
           .setName("message_id")
-          .setDescription("Message ID")
+          .setDescription("Enter the message ID to reply to")
           .setRequired(true)
       )
       .addStringOption((option) =>
         option
           .setName("reply_message")
-          .setDescription("Reply Message")
+          .setDescription("Enter the reply message")
           .setRequired(true)
       ),
   ].map((command) => command.toJSON());
@@ -211,60 +216,70 @@ client.once("ready", () => {
     try {
       console.log("Registering slash commands...");
       await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-      console.log("Commands successfully registered.");
+      console.log("Commands registered successfully.");
     } catch (error) {
       console.error(error);
     }
   })();
 });
 
-// Interaction handler
+// Handle slash commands
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
-  const { member, guild, channel, commandName } = interaction;
+  const member = interaction.member;
+  const isOwner = member.id === interaction.guild.ownerId;
+  const isAdmin = member.roles.cache.some(
+    (role) => role.name === "☠️Overlord"
+  );
 
-  if (!isAuthorized(member, guild)) {
-    return interaction.reply({
+  if (!isOwner && !isAdmin) {
+    return await interaction.reply({
       content: "You do not have permission to use this command.",
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   }
 
-  if (commandName === "chat") {
+  if (interaction.commandName === "chat") {
     const message = interaction.options.getString("message");
-    await interaction.reply({ content: "Message sent!", ephemeral: true });
-    await channel.send(message).catch((err) =>
-      console.error("Failed to send message:", err)
-    );
+
+    await interaction.reply({
+      content: "Message successfully sent!",
+      flags: MessageFlags.Ephemeral,
+    });
+
+    await interaction.channel.send(message).catch((error) => {
+      console.error(`Failed to send message: ${error}`);
+    });
   }
 
-  if (commandName === "reply") {
+  if (interaction.commandName === "reply") {
     const messageId = interaction.options.getString("message_id");
     const replyMessage = interaction.options.getString("reply_message");
 
     try {
-      const targetMessage = await channel.messages.fetch(messageId);
-      if (!targetMessage) {
-        return interaction.reply({
+      const message = await interaction.channel.messages.fetch(messageId);
+      if (!message) {
+        return await interaction.reply({
           content: "Message not found.",
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
-      await targetMessage.reply(replyMessage);
+
+      await message.reply(replyMessage);
       await interaction.reply({
         content: "Reply sent successfully!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     } catch (error) {
-      console.error("Reply failed:", error);
+      console.error(`Failed to fetch or reply to message: ${error}`);
       await interaction.reply({
-        content: "Failed to reply. Check the message ID.",
-        ephemeral: true,
+        content: "Failed to reply to message. Please check the message ID.",
+        flags: MessageFlags.Ephemeral,
       });
     }
   }
 });
 
-// Login
+// Login bot
 client.login(BOT_TOKEN);
